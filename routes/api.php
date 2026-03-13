@@ -8,6 +8,7 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReportController;
@@ -26,6 +27,9 @@ Route::prefix('auth')->group(function () {
 
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
+
+    Route::post('password/forgot', [PasswordResetController::class, 'sendResetCode']);
+    Route::post('password/reset', [PasswordResetController::class, 'resetPassword']);
 });
 
 /*
