@@ -43,7 +43,7 @@ class CategoryController extends Controller
             'status' => true,
             'message' => 'Category created successfully',
             'data' => new CategoryResource($category)
-        ]);
+        ], 201);
     }
 
     /**
@@ -55,7 +55,7 @@ class CategoryController extends Controller
             'status' => true,
             'message' => 'Category retrieved successfully',
             'data' => new CategoryResource($category)
-        ]);
+        ], 200);
     }
 
     /**
@@ -69,7 +69,7 @@ class CategoryController extends Controller
             'status' => true,
             'message' => 'Category updated successfully',
             'data' => new CategoryResource($category)
-        ]);
+        ], 200);
     }
 
     /**
@@ -83,6 +83,6 @@ class CategoryController extends Controller
             'status' => true,
             'message' => 'State updated successfully',
             'data' => new CategoryResource($category)
-        ]);
+        ], 200);
     }
 }
