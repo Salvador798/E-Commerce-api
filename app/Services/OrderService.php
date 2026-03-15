@@ -60,6 +60,13 @@ class OrderService
                 'total' => $total
             ]);
 
+            UserLogService::add(
+                'CREAR_PEDIDO',
+                'PEDIDOS',
+                "Pedido #{$order->id} creado con total {$order->total}",
+                $order->user_id
+            );
+
             // Second loop: create order items and decrement inventory
             foreach ($data['items'] as $item) {
 

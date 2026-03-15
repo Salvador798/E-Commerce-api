@@ -51,6 +51,14 @@ class CheckoutService
                 'total' => $total
             ]);
 
+            // Registrar log del pedido
+            UserLogService::add(
+                'CREAR_PEDIDO',
+                'PEDIDOS',
+                "Pedido #{$order->id} creado con total {$order->total}",
+                $userId
+            );
+
             // Process items
             foreach ($cart->items as $item) {
 
@@ -88,6 +96,13 @@ class CheckoutService
                 'status' => 'aprobado'
             ]);
 
+            UserLogService::add(
+                'CREAR_PAGO',
+                'PAGOS',
+                "Pago #{$payment->id} para pedido #{$order->id} por {$payment->amount} ({$payment->status})",
+                $userId
+            );
+
             // Update order status
             $order->update(['status' => 'pagado']);
 
@@ -100,11 +115,25 @@ class CheckoutService
                 'status' => 'en_transito'
             ]);
 
+            UserLogService::add(
+                'CREAR_ENVIO',
+                'ENVIOS',
+                "Envio #{$shipment->id} para pedido #{$order->id} con {$shipment->carrier}",
+                $userId
+            );
+
             // Update order status again
             $order->update(['status' => 'enviado']);
 
             // Empty cart
             $cart->items()->delete();
+
+            UserLogService::add(
+                'VACIAR_CARRITO',
+                'CARRITO',
+                "Carrito #{$cart->id} vaciado luego del checkout del pedido #{$order->id}",
+                $userId
+            );
 
             return [
                 'order' => $order->load('items.product', 'address'),

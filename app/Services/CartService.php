@@ -34,10 +34,27 @@ class CartService
         if ($item) {
             $item->quantity += $data['quantity'];
             $item->save();
+
+            UserLogService::add(
+                'ACTUALIZAR_CARRITO',
+                'CARRITO',
+                "Producto #{$item->product_id} cantidad {$item->quantity} en carrito #{$cart->id}",
+                $cart->user_id
+            );
+
             return $item;
         }
 
-        return $cart->items()->create($data);
+        $item = $cart->items()->create($data);
+
+        UserLogService::add(
+            'AGREGAR_CARRITO',
+            'CARRITO',
+            "Producto #{$item->product_id} cantidad {$item->quantity} en carrito #{$cart->id}",
+            $cart->user_id
+        );
+
+        return $item;
     }
 
     /**
@@ -50,6 +67,15 @@ class CartService
     public function updateItem(CartItem $item, array $data)
     {
         $item->update($data);
+
+        $cart = $item->cart;
+        UserLogService::add(
+            'ACTUALIZAR_CARRITO',
+            'CARRITO',
+            "Item #{$item->id} cantidad {$item->quantity} en carrito #{$item->cart_id}",
+            $cart ? $cart->user_id : null
+        );
+
         return $item;
     }
 
@@ -61,6 +87,15 @@ class CartService
      */
     public function removeItem(CartItem $item)
     {
+        $cart = $item->cart;
+
+        UserLogService::add(
+            'ELIMINAR_CARRITO',
+            'CARRITO',
+            "Producto #{$item->product_id} removido del carrito #{$item->cart_id}",
+            $cart ? $cart->user_id : null
+        );
+
         $item->delete();
     }
 
@@ -73,5 +108,12 @@ class CartService
     public function empty(Cart $cart)
     {
         $cart->items()->delete();
+
+        UserLogService::add(
+            'VACIAR_CARRITO',
+            'CARRITO',
+            "Carrito #{$cart->id} vaciado",
+            $cart->user_id
+        );
     }
 }

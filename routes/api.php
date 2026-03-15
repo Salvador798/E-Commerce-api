@@ -14,6 +14,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserLogController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -119,6 +120,9 @@ Route::middleware(['auth:sanctum', 'isAdmin'])->prefix('admin')->group(function 
     // Stock
     Route::get('stock/summary', [DashboardController::class, 'summaryStock']);
     Route::get('stock/low', [DashboardController::class, 'stockLow']);
+
+    // User Log
+    Route::get('users/log', [UserLogController::class, 'index']);
 
     // Users - CRUD operations
     Route::apiResource('users', UserController::class);

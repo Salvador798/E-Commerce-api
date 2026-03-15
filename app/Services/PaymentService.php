@@ -64,6 +64,13 @@ class PaymentService
                 'status' => $data['status']
             ]);
 
+            UserLogService::add(
+                'CREAR_PAGO',
+                'PAGOS',
+                "Pago #{$payment->id} para pedido #{$order->id} por {$payment->amount} ({$payment->status})",
+                $order->user_id
+            );
+
             // If payment is approved/paid, update the order status to 'pagado'
             if (in_array($data['status'], ['aprobado', 'paid'], true)) {
                 $order->update([
@@ -76,5 +83,3 @@ class PaymentService
         });
     }
 }
-
-
