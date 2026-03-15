@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Cart\StoreCartItemRequest;
 use App\Http\Requests\Cart\UpdateCartItemRequest;
+use App\Http\Resources\CartResource;
 use App\Models\CartItem;
 use App\Services\CartService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
@@ -23,22 +25,37 @@ class CartController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreCartItemRequest $request, $userId)
+    public function store(StoreCartItemRequest $request)
     {
-        $cart = $this->service->getCartUser($userId);
-        $item = $this->service->addProduct($cart, $request->validated());
+        $userId = Auth::id();
 
-        return response()->json($item);
+        $cart = $this->service->getCartUser($userId);
+
+        $this->service->addProduct($cart, $request->validated());
+
+        $cart->load('items.product');
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Product added to cart successfully',
+            'data' => new CartResource($cart)
+        ]);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show($userId)
+    public function show()
     {
-        return response()->json(
-            $this->service->getCartUser($userId)
-        );
+        $userId = Auth::id();
+
+        $cart = $this->service->getCartUser($userId);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Cart retrieved successfully',
+            'data' => new CartResource($cart)
+        ]);
     }
 
     /**
@@ -46,9 +63,13 @@ class CartController extends Controller
      */
     public function update(UpdateCartItemRequest $request, CartItem $item)
     {
-        return response()->json(
-            $this->service->updateItem($item, $request->validated())
-        );
+        $cart = $this->service->updateItem($item, $request->validated());
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Cart updated successfully',
+            'data' => new CartResource($cart)
+        ]);
     }
 
     /**
@@ -57,7 +78,10 @@ class CartController extends Controller
     public function destroy(CartItem $item)
     {
         $this->service->removeItem($item);
-        return response()->json(null, 204);
+        return response()->json([
+            'status' => true,
+            'message' => 'Item removed from cart successfully'
+        ], 204);
     }
 
     public function empty($userId)
@@ -65,6 +89,9 @@ class CartController extends Controller
         $cart = $this->service->getCartUser($userId);
         $this->service->empty($cart);
 
-        return response()->json(null, 204);
+        return response()->json([
+            'status' => true,
+            'message' => 'Cart emptied successfully'
+        ], 204);
     }
 }

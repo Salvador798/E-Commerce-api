@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Address;
 use App\Models\Cart;
+use App\Models\Inventory;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
@@ -19,7 +20,7 @@ class CheckoutService
         return DB::transaction(function () use ($data, $userId) {
 
             // Get Cart
-            $cart = Cart::with('items.product.inventory')
+            $cart = Cart::with('items.product')
                 ->where('user_id', $userId)
                 ->first();
 
@@ -27,7 +28,7 @@ class CheckoutService
                 throw new Exception('The cart is empty');
             }
 
-            // Verify that the address belongs to the user
+            // Verify address ownership
             $address = Address::where('id', $data['address_id'])
                 ->where('user_id', $userId)
                 ->first();
@@ -37,10 +38,9 @@ class CheckoutService
             }
 
             // Calculate total
-            $total = 0;
-            foreach ($cart->items as $item) {
-                $total += $item->product->price * $item->quantity;
-            }
+            $total = $cart->items->sum(function ($item) {
+                return $item->product->price * $item->quantity;
+            });
 
             // Create order
             $order = Order::create([
@@ -51,13 +51,22 @@ class CheckoutService
                 'total' => $total
             ]);
 
-            // Create items and deduct inventory
+            // Process items
             foreach ($cart->items as $item) {
 
-                if ($item->product->inventory->available_quantity < $item->quantity) {
+                $inventory = Inventory::where('product_id', $item->product->id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$inventory) {
+                    throw new Exception("Inventory not found for {$item->product->name}");
+                }
+
+                if ($inventory->available_quantity < $item->quantity) {
                     throw new Exception("Stock insuficiente para {$item->product->name}");
                 }
 
+                // Create order item
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $item->product->id,
@@ -65,9 +74,9 @@ class CheckoutService
                     'emit_price' => $item->product->price
                 ]);
 
-                // Discount stock
-                $item->product->inventory->available_quantity -= $item->quantity;
-                $item->product->inventory->save();
+                // Deduct inventory
+                $inventory->available_quantity -= $item->quantity;
+                $inventory->save();
             }
 
             // Register payment
@@ -79,11 +88,10 @@ class CheckoutService
                 'status' => 'aprobado'
             ]);
 
-            // Cambiar estado del pedido
-            $order->status = 'pagado';
-            $order->save();
+            // Update order status
+            $order->update(['status' => 'pagado']);
 
-            // Generate shipment
+            // Create shipment
             $shipment = Shipment::create([
                 'order_id' => $order->id,
                 'carrier' => 'DHL',
@@ -92,16 +100,14 @@ class CheckoutService
                 'status' => 'en_transito'
             ]);
 
-            // Change order status
-            $order->status = 'enviado';
-            $order->save();
+            // Update order status again
+            $order->update(['status' => 'enviado']);
 
             // Empty cart
             $cart->items()->delete();
 
-            // Devolver todo el flujo
             return [
-                'order' => $order->load('items', 'address'),
+                'order' => $order->load('items.product', 'address'),
                 'payment' => $payment,
                 'shipment' => $shipment
             ];

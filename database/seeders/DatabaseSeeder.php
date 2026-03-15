@@ -16,15 +16,15 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            CategorySeeder::class,
+            // CategorySeeder::class,
             UserSeeder::class,
-            AddressSeeder::class,
-            ProductSeeder::class,
-            InventorySeeder::class,
-            CartSeeder::class,
-            OrderSeeder::class,
-            PaymentSeeder::class,
-            ShipmentSeeder::class,
+            // AddressSeeder::class,
+            // ProductSeeder::class,
+            // InventorySeeder::class,
+            // CartSeeder::class,
+            // OrderSeeder::class,
+            // PaymentSeeder::class,
+            // ShipmentSeeder::class,
         ]);
     }
 }

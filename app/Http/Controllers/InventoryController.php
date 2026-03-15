@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Inventory\StoreInventoryRequest;
 use App\Http\Requests\Inventory\UpdateInventoryRequest;
+use App\Http\Resources\InventoryResource;
 use App\Models\Inventory;
 use App\Services\InventoryService;
 use Illuminate\Http\Request;
@@ -17,7 +18,13 @@ class InventoryController extends Controller
      */
     public function index()
     {
-        return response()->json([$this->service->all()]);
+        $inventories = $this->service->all();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Inventories retrieved successfully',
+            'data' => InventoryResource::collection($inventories)
+        ]);
     }
 
     /**
@@ -27,7 +34,11 @@ class InventoryController extends Controller
     {
         $inventory = $this->service->create($request->validated());
 
-        return response()->json($inventory);
+        return response()->json([
+            'status' => true,
+            'message' => 'Inventory created successfully',
+            'data' => new InventoryResource($inventory->load('product'))
+        ]);
     }
 
     /**
@@ -45,7 +56,11 @@ class InventoryController extends Controller
     {
         $inventory = $this->service->update($inventory, $request->validated());
 
-        return response()->json($inventory);
+        return response()->json([
+            'status' => true,
+            'message' => 'Inventory updated successfully',
+            'data' => new InventoryResource($inventory->load('product'))
+        ]);
     }
 
     /**

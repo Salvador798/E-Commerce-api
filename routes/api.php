@@ -61,6 +61,14 @@ Route::middleware('auth:sanctum')->prefix('customer')->group(function () {
     // Auth
     Route::post('logout', [AuthController::class, 'logout']);
 
+    // Product
+    Route::get('products', [ProductController::class, 'index']);
+    Route::get('products/{product}', [ProductController::class, 'show']);
+
+    // Category
+    Route::get('categories', [CategoryController::class, 'index']);
+    Route::get('categories/{category}', [CategoryController::class, 'show']);
+
     // Address - manage user addresses
     Route::get('address', [AddressController::class, 'index']);
     Route::post('address', [AddressController::class, 'store']);

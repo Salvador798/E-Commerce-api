@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Address\StoreAddressRequest;
 use App\Http\Requests\Address\UpdateAddressRequest;
+use App\Http\Resources\AddressResource;
 use App\Models\Address;
 use App\Services\AddressService;
 use Illuminate\Http\Request;
@@ -17,9 +18,13 @@ class AddressController extends Controller
      */
     public function index(Request $request)
     {
-        return response()->json(
-            $this->service->getByUser($request->user()->id)
-        );
+        $addresses = $this->service->getByUser($request->user()->id);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Addresses retrieved successfully',
+            'data' => AddressResource::collection($addresses)
+        ]);
     }
 
     /**
@@ -30,7 +35,11 @@ class AddressController extends Controller
         $data = $request->validated();
         $data['user_id'] = $request->user()->id;
         $address = $this->service->create($data);
-        return response()->json($address, 201);
+        return response()->json([
+            'status' => true,
+            'message' => 'Address created successfully',
+            'data' => new AddressResource($address)
+        ], 201);
     }
 
     /**
@@ -47,7 +56,12 @@ class AddressController extends Controller
     public function update(UpdateAddressRequest $request, Address $address)
     {
         $address = $this->service->update($address, $request->validated());
-        return response()->json($address);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Address updated successfully',
+            'data' => new AddressResource($address)
+        ]);
     }
 
     /**
@@ -56,6 +70,9 @@ class AddressController extends Controller
     public function destroy(Address $address)
     {
         $this->service->delete($address);
-        return response()->json(null, 204);
+        return response()->json([
+            'status' => true,
+            'message' => 'Address deleted successfully'
+        ], 204);
     }
 }

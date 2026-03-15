@@ -33,7 +33,7 @@ class PaymentService
      *                    - order_id: The ID of the order to pay
      *                    - amount: The payment amount
      *                    - method: The payment method (e.g., credit_card, cash, transfer)
-     *                    - status: The payment status (e.g., pending, paid, failed)
+     *                    - status: The payment status (e.g., pendiente, aprobado, rechazado)
      * @return \App\Models\Payment The created Payment model
      * @throws \Exception If the order already has a payment or if the amount doesn't match
      */
@@ -64,8 +64,8 @@ class PaymentService
                 'status' => $data['status']
             ]);
 
-            // If payment status is 'paid', update the order status to 'pagado'
-            if ($data['status'] === 'paid') {
+            // If payment is approved/paid, update the order status to 'pagado'
+            if (in_array($data['status'], ['aprobado', 'paid'], true)) {
                 $order->update([
                     'status' => 'pagado'
                 ]);
@@ -76,3 +76,5 @@ class PaymentService
         });
     }
 }
+
+

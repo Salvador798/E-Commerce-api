@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Payment\StorePaymentRequest;
+use App\Http\Resources\PaymentResource;
 use App\Services\PaymentService;
 use Exception;
 use Illuminate\Http\Request;
@@ -18,7 +19,11 @@ class PaymentController extends Controller
     {
         $payments = $this->service->all();
 
-        return response()->json($payments);
+        return response()->json([
+            'status' => true,
+            'message' => 'Payments retrieved successfully',
+            'data' => PaymentResource::collection($payments)
+        ]);
     }
 
     /**
@@ -28,10 +33,16 @@ class PaymentController extends Controller
     {
         try {
             $payment = $this->service->create($request->validated());
-            return response()->json($payment, 201);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Payment created successfully',
+                'data' => new PaymentResource($payment)
+            ], 201);
         } catch (Exception $e) {
             return response()->json([
-                'error' => $e->getMessage()
+                'status' => false,
+                'message' => $e->getMessage()
             ], 422);
         }
     }

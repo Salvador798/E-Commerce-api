@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Shipment\StoreShipmentRequest;
+use App\Http\Resources\ShipmentResource;
 use App\Models\Shipment;
 use App\Services\ShipmentService;
 use Exception;
@@ -19,7 +20,11 @@ class ShipmentController extends Controller
     {
         $shipments = $this->service->all();
 
-        return response()->json($shipments);
+        return response()->json([
+            'status' => true,
+            'message' => 'Shipments retrieved successfully',
+            'data' => ShipmentResource::collection($shipments)
+        ]);
     }
 
     /**
@@ -29,9 +34,17 @@ class ShipmentController extends Controller
     {
         try {
             $shipment = $this->service->create($request->validated());
-            return response()->json($shipment, 201);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Shipment created successfully',
+                'data' => new ShipmentResource($shipment)
+            ], 201);
         } catch (Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 422);
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage()
+            ], 422);
         }
     }
 
@@ -54,7 +67,11 @@ class ShipmentController extends Controller
 
         $shipment = $this->service->updateStatus($shipment, $request->status);
 
-        return response()->json($shipment);
+        return response()->json([
+            'status' => true,
+            'message' => 'Shipment status updated successfully',
+            'data' => new ShipmentResource($shipment)
+        ]);
     }
 
     /**

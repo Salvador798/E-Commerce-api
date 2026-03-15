@@ -25,6 +25,15 @@ class InventoryService
      */
     public function create(array $data)
     {
+        $inventory = Inventory::where('product_id', $data['product_id'])->first();
+
+        if ($inventory) {
+            $inventory->available_quantity += $data['available_quantity'];
+            $inventory->save();
+
+            return $inventory;
+        }
+
         return Inventory::create($data);
     }
 
