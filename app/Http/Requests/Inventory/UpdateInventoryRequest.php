@@ -11,7 +11,7 @@ class UpdateInventoryRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -26,3 +26,4 @@ class UpdateInventoryRequest extends FormRequest
         ];
     }
 }
+

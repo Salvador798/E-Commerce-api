@@ -84,8 +84,9 @@ class CartController extends Controller
         ], 204);
     }
 
-    public function empty($userId)
+    public function empty()
     {
+        $userId = Auth::id();
         $cart = $this->service->getCartUser($userId);
         $this->service->empty($cart);
 
@@ -95,3 +96,9 @@ class CartController extends Controller
         ], 204);
     }
 }
+
+
+
+
+
+

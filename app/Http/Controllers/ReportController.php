@@ -3,12 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\ReportResource;
-use App\Models\Address;
-use App\Models\Category;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\Payment;
-use App\Models\User;
 use App\Services\ReportService;
 use Illuminate\Http\Request;
 

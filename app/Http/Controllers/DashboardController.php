@@ -8,6 +8,7 @@ use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -22,7 +23,12 @@ class DashboardController extends Controller
 
     public function SalesPerMonth()
     {
-        return Payment::selectRaw('MONTH(date) as mes, SUM(amount) as total')
+        $driver = DB::getDriverName();
+        $monthExpr = $driver === 'sqlite'
+            ? "strftime('%m', date) as mes"
+            : 'MONTH(date) as mes';
+
+        return Payment::selectRaw($monthExpr . ', SUM(amount) as total')
             ->where('status', 'aprobado')
             ->groupBy('mes')
             ->orderBy('mes')
@@ -31,10 +37,10 @@ class DashboardController extends Controller
 
     public function BestsellingProducts()
     {
-        return OrderItem::selectRaw('product_id, SUM(QUANTITY) as total_sale')
+        return OrderItem::selectRaw('product_id, SUM(quantity) as total_sale')
             ->groupBy('product_id')
             ->orderByDesc('total_sale')
-            ->with('produict')
+            ->with('product')
             ->limit(10)
             ->get();
     }
@@ -61,8 +67,8 @@ class DashboardController extends Controller
     {
         return [
             'total_products' => Product::count(),
-            'products_in_stock' => Inventory::where('available_quantity', '>', 0),
-            'out_of_stock products' => Inventory::where('available_quantity', '=', 0),
+            'products_in_stock' => Inventory::where('available_quantity', '>', 0)->count(),
+            'out_of_stock products' => Inventory::where('available_quantity', '=', 0)->count(),
         ];
     }
 
@@ -74,3 +80,5 @@ class DashboardController extends Controller
             ->get();
     }
 }
+
+

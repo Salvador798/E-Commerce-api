@@ -24,7 +24,7 @@ class ProductController extends Controller
             'status' => true,
             'message' => 'Products retrieved successfully',
             'data' => ProductResource::collection($products)
-        ]);
+        ], 200);
     }
 
     /**
